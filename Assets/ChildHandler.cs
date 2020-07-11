@@ -25,4 +25,8 @@ public class ChildHandler : MonoBehaviour
             Destroy(gameObject);
         }
     }
+        public void IncreaseHealth() {
+        health = Mathf.Min(3, health + 1);
+        Debug.Log("Child Healed!");
+    }
 }

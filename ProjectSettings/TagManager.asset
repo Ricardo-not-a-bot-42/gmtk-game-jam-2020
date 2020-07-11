@@ -7,6 +7,9 @@ TagManager:
   - char
   - child
   - enemy
+  - Floor
+  - wall
+  - boss
   layers:
   - Default
   - TransparentFX

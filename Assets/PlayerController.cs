@@ -9,7 +9,14 @@ public class PlayerController : MonoBehaviour
         public int FacingRight = 1;
         public GameObject Picked_Child;
         public float max_speed = 3f;
+        public float added_speed = 0f;
+        public float forceToAdd = 7f;
         int Pick_CD = 0;
+        public bool triggerExplosion = false;
+        float timeToApply;
+        public bool IsSad = false;
+        public bool IsHappy = false;
+        public int IsConfused = 1;
     void Start()
     {
         rigidbody = gameObject.GetComponent<Rigidbody2D>();
@@ -47,6 +54,12 @@ public class PlayerController : MonoBehaviour
     }
   }
 
+  IEnumerator disableExplosion()
+    {
+        yield return new WaitForSeconds(0.1f);
+        triggerExplosion = false;
+    }
+
   void OnTriggerStay2D(Collider2D collision) {
           if (Input.GetKeyDown(KeyCode.Space) && collision.gameObject.tag == "child" && GetComponent<GameHandler>().carryingChild == false)
     {
@@ -56,18 +69,52 @@ public class PlayerController : MonoBehaviour
         Pick_CD = 30;
         GetComponent<GameHandler>().carryingChild = true;
     }
+
+    if(triggerExplosion == true && (collision.gameObject.tag == "child" || collision.gameObject.tag == "boss" || collision.gameObject.tag == "wall")) {
+      Debug.Log("exploded");
+      if(collision.gameObject.tag == "child") {
+        collision.gameObject.GetComponent<ChildHandler>().DecreaseHealth();
+        collision.gameObject.GetComponent<ChildHandler>().DecreaseHealth();
+        collision.gameObject.GetComponent<ChildHandler>().DecreaseHealth();
+      }
+      if(collision.gameObject.tag == "wall") {
+        Destroy(collision.gameObject);
+      }
+      if(collision.gameObject.tag == "boss") {
+        collision.gameObject.GetComponent<BossHandler>().decreaseHealth(1);
+      }
+      StartCoroutine(disableExplosion());
+    }
+
+    if(IsSad == true || IsHappy == true && collision.gameObject.tag == "child") {
+      timeToApply += 0.1f;
+      if(timeToApply >= 60f) {
+        if(IsSad == true) {
+          collision.gameObject.GetComponent<ChildHandler>().DecreaseHealth();
+          timeToApply = 0f;
+        }
+        if(IsHappy == true) {
+          collision.gameObject.GetComponent<ChildHandler>().IncreaseHealth();
+          timeToApply = 0f;
+        }
+      }
+    }
+  }
+
+  void OnTriggerExit2D(Collider2D collision) {
+    timeToApply = 0f;
   }
 
   private void HandleMovement()
   {
     if (Input.GetKey("right") && rigidbody.velocity.x < max_speed)
     {
-      rigidbody.AddForce(new Vector2(5f, 0f));
+      rigidbody.AddForce(new Vector2(forceToAdd * IsConfused, 0f));
       FacingRight = 1;
     }
     if (Input.GetKey("left") && rigidbody.velocity.x > -max_speed)
     {
-      rigidbody.AddForce(new Vector2(-5f, 0f));
+      rigidbody.AddForce(new Vector2(-forceToAdd * IsConfused, 0f));
       FacingRight = -1;
     }
     if (Input.GetKeyDown("up") && rigidbody.velocity.y == 0)
@@ -75,13 +122,13 @@ public class PlayerController : MonoBehaviour
       rigidbody.AddForce(new Vector2(0, 350f));
     }
 
-    if (rigidbody.velocity.y != 0f && max_speed != 1f)
+    if (rigidbody.velocity.y != 0f && max_speed != 1f + added_speed)
     {
-      max_speed = 1f;
+      max_speed = 1f + added_speed;
     }
-    else if (max_speed != 3f)
+    else if (max_speed != 3f + added_speed)
     {
-      max_speed = 3f;
+      max_speed = 3f + added_speed;
     }
   }
 }
