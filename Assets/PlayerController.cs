@@ -21,9 +21,11 @@ public class PlayerController : MonoBehaviour
     HandleMovement();
     if(GetComponent<GameHandler>().carryingChild == true && Picked_Child == null) {
         GetComponent<GameHandler>().carryingChild = false;
+        GetComponent<GameHandler>().updateChildHealthCounter(0);
     }
     if(GetComponent<GameHandler>().carryingChild == true) {
         Picked_Child.transform.position = new Vector2(gameObject.transform.position.x + 0.35f * FacingRight, gameObject.transform.position.y + 0.2f);
+        GetComponent<GameHandler>().updateChildHealthCounter(Picked_Child.GetComponent<ChildHandler>().health);
     }
     if(Pick_CD > 0) {
         Pick_CD--;
@@ -33,6 +35,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Let go!");
         Picked_Child.gameObject.GetComponent<Rigidbody2D>().gravityScale = 1f;
         float bowlingSpeed;
+        GetComponent<GameHandler>().updateChildHealthCounter(0);
         if(GetComponent<Rigidbody2D>().velocity.y == 0) {
             bowlingSpeed = 10f;
         } else {
